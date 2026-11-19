@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Для тебя</title>
-  <!-- Open Graph для красивого превью в Telegram -->
   <meta property="og:title" content="Маленькое сообщение для тебя ✨" />
   <meta property="og:description" content="Открой, когда будет минутка..." />
   <style>
@@ -18,6 +18,8 @@
       --accent: #ff5e7e;
       --accent-glow: rgba(255, 94, 126, 0.45);
       --accent-2: #ff9472;
+      --love-color: #ff7eb6;
+      --love-glow: rgba(255, 126, 182, 0.65);
     }
 
     * {
@@ -40,7 +42,6 @@
       position: relative;
     }
 
-    /* Фоновое мягкое свечение */
     .ambient-glow {
       position: fixed;
       width: 320px;
@@ -67,11 +68,91 @@
       -webkit-backdrop-filter: blur(18px);
       border: 1px solid var(--card-border);
       border-radius: 28px;
-      padding: 32px 24px;
+      padding: 30px 24px;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
       position: relative;
       z-index: 2;
-      transition: transform 0.4s ease, opacity 0.4s ease;
+      overflow: hidden;
+    }
+
+    .step {
+      display: none;
+      position: relative;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .local-flight-layer {
+      position: relative;
+      z-index: 1;
+    }
+
+    .local-flight-layer > *:not(.flight-overlay) {
+      position: relative;
+      z-index: 3;
+    }
+
+    .flight-overlay {
+      position: absolute;
+      inset: -8px -6px;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2;
+      border-radius: 20px;
+    }
+
+    .roaming-emoji {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.28;
+      will-change: transform;
+      animation: roamDrift var(--roam-dur, 7s) ease-in-out var(--roam-delay, 0s) infinite alternate;
+    }
+
+    @keyframes roamDrift {
+      0% {
+        transform: translate3d(0px, 0px, 0) rotate(-8deg) scale(0.95);
+      }
+      50% {
+        transform: translate3d(var(--rx1, 22px), var(--ry1, -18px), 0) rotate(9deg) scale(1.06);
+      }
+      100% {
+        transform: translate3d(var(--rx2, -18px), var(--ry2, 16px), 0) rotate(-6deg) scale(1);
+      }
+    }
+
+    .burst-emoji {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      z-index: 4;
+      animation: localBurst var(--burst-dur, 1.8s) ease-out forwards;
+    }
+
+    @keyframes localBurst {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 8px, 0) scale(0.75) rotate(0deg);
+      }
+      20% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--bx, 24px), var(--by, -56px), 0) scale(1.2) rotate(var(--br, 18deg));
+      }
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
     .badge {
@@ -85,12 +166,26 @@
       color: #ff9eb2;
       font-size: 12px;
       font-weight: 500;
-      letter-spacing: 0.3px;
-      margin-bottom: 18px;
+    }
+
+    .btn-ghost-mini {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-ghost-mini:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.11);
     }
 
     h1 {
-      font-size: 26px;
+      font-size: 25px;
       line-height: 1.25;
       font-weight: 700;
       margin-bottom: 16px;
@@ -106,7 +201,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .story strong {
@@ -114,12 +209,43 @@
       font-weight: 600;
     }
 
+    /* Подсветка и свечение фразы «Я люблю тебя» */
+    .love-phrase {
+      color: var(--love-color);
+      font-weight: 700;
+      text-shadow:
+        0 0 8px var(--love-glow),
+        0 0 18px var(--love-glow),
+        0 0 30px var(--love-glow);
+      animation: lovePulse 2.4s ease-in-out infinite alternate;
+      transition: color 0.35s ease, text-shadow 0.35s ease;
+    }
+
+    @keyframes lovePulse {
+      0% {
+        filter: brightness(0.95);
+        text-shadow:
+          0 0 7px var(--love-glow),
+          0 0 16px var(--love-glow);
+      }
+      100% {
+        filter: brightness(1.12);
+        text-shadow:
+          0 0 10px var(--love-glow),
+          0 0 22px var(--love-glow),
+          0 0 36px var(--love-glow);
+      }
+    }
+
     .actions {
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 12px;
       position: relative;
-      min-height: 112px;
+      min-height: 148px;
+      padding-bottom: 10px;
+      overflow: visible;
     }
 
     .btn {
@@ -142,6 +268,8 @@
       background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
       color: #fff;
       box-shadow: 0 10px 25px var(--accent-glow);
+      position: relative;
+      z-index: 6;
     }
 
     .btn-primary:active {
@@ -149,26 +277,27 @@
     }
 
     .btn-runaway {
-      background: rgba(255, 255, 255, 0.07);
+      width: auto;
+      min-width: 170px;
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 13px;
+      font-size: 13.5px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.06);
       color: var(--text-muted);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease;
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease;
       position: relative;
       z-index: 10;
-    }
-
-    /* Второй экран: выбор варианта */
-    .step {
-      display: none;
-      animation: fadeIn 0.45s ease forwards;
-    }
-
-    .step.active {
-      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      touch-action: manipulation;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -176,23 +305,19 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .option-card {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 16px;
-      padding: 14px 16px;
+      padding: 13px 15px;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: flex-start;
       gap: 12px;
-    }
-
-    .option-card:hover {
-      background: rgba(255, 255, 255, 0.08);
     }
 
     .option-card.selected {
@@ -202,21 +327,52 @@
     }
 
     .option-emoji {
-      font-size: 22px;
+      font-size: 21px;
       line-height: 1.2;
     }
 
     .option-content h3 {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 600;
       color: var(--text-main);
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .option-content p {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.35;
+    }
+
+    .section-label {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip.selected {
+      background: rgba(255, 94, 126, 0.18);
+      border-color: var(--accent);
+      color: var(--text-main);
     }
 
     .custom-input {
@@ -224,13 +380,12 @@
       background: rgba(0, 0, 0, 0.25);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 14px;
-      padding: 13px 15px;
+      padding: 12px 14px;
       color: var(--text-main);
       font-size: 14px;
       font-family: inherit;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       outline: none;
-      transition: border-color 0.2s ease;
     }
 
     .custom-input::placeholder {
@@ -241,15 +396,14 @@
       border-color: var(--accent);
     }
 
-    /* Финальный экран */
     .final-box {
       text-align: center;
-      padding: 12px 0;
+      padding: 10px 0;
     }
 
     .final-heart {
-      font-size: 52px;
-      margin-bottom: 14px;
+      font-size: 50px;
+      margin-bottom: 12px;
       display: inline-block;
       animation: heartbeat 1.4s ease-in-out infinite;
     }
@@ -261,33 +415,50 @@
       65% { transform: scale(1.08); }
     }
 
+    .dodge-result {
+      font-size: 13.5px;
+      color: #ffb3c2;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
     .chosen-summary {
       background: rgba(255, 255, 255, 0.06);
       border-radius: 16px;
       padding: 14px;
-      margin: 18px 0 22px;
-      font-size: 14.5px;
+      margin: 16px 0 22px;
+      font-size: 14px;
+      line-height: 1.5;
       color: var(--text-main);
       border: 1px dashed rgba(255, 94, 126, 0.4);
     }
 
-    /* Падающие сердечки */
-    .floating-heart {
+    .falling-item {
       position: fixed;
+      top: -40px;
       pointer-events: none;
       z-index: 100;
-      font-size: 20px;
-      animation: flyUp 2.6s ease-out forwards;
+      user-select: none;
+      animation: fallDown var(--fall-dur, 3.2s) linear forwards;
     }
 
-    @keyframes flyUp {
+    @keyframes fallDown {
       0% {
+        opacity: 0;
+        transform: translate3d(0, -20px, 0) rotate(0deg) scale(0.85);
+      }
+      12% {
         opacity: 1;
-        transform: translateY(0) scale(0.8) rotate(0deg);
+      }
+      50% {
+        transform: translate3d(var(--sway, 18px), 48vh, 0) rotate(var(--rot, 18deg)) scale(1.05);
+      }
+      88% {
+        opacity: 0.95;
       }
       100% {
         opacity: 0;
-        transform: translateY(-280px) scale(1.4) rotate(25deg);
+        transform: translate3d(calc(var(--sway, 18px) * -0.5), 102vh, 0) rotate(calc(var(--rot, 18deg) * -1)) scale(0.95);
       }
     }
   </style>
@@ -296,80 +467,81 @@
   <div class="ambient-glow"></div>
 
   <div class="container">
-    <!-- ШАГ 1: Признание -->
+    <!-- ШАГ 1 -->
     <div id="step-1" class="step active">
-      <div class="badge">✨ Честно и от души</div>
-      <h1>Кажется, я снова в тебя влюбился</h1>
-      <div class="story">
-        <p>
-          У нас за плечами три года и целая история. За тот год, что мы были порознь, многое переосмыслилось — и сейчас, когда мы снова общаемся, я поймал себя на очень простой мысли.
-        </p>
-        <p>
-          Мне по-настоящему хорошо рядом с тобой. <strong>Я люблю тебя</strong> — уже без лишней суеты, но ещё сильнее и осознаннее, чем раньше.
-        </p>
-        <p>
-          Не хочу торопить события, просто очень хочу пригласить тебя на свидание. Пойдём?
-        </p>
+      <div class="top-row">
+        <div class="badge" id="confession-badge">✨ Наша история</div>
+        <button class="btn-ghost-mini" id="btn-shuffle-confession" type="button">🔄 Другой вариант</button>
       </div>
 
-      <div class="actions" id="actions-area">
-        <button class="btn btn-primary" id="btn-yes">Да, с удовольствием ❤️</button>
-        <button class="btn btn-runaway" id="btn-no">Мне нужно подумать...</button>
+      <div class="local-flight-layer" id="confession-flight-zone">
+        <div class="flight-overlay" id="flight-overlay"></div>
+        <div class="story" id="confession-body"></div>
+
+        <div class="actions" id="actions-area">
+          <button class="btn btn-primary" id="btn-yes" type="button">Давай встретимся ❤️</button>
+          <button class="btn btn-runaway" id="btn-no" type="button" tabindex="-1">Подумать...</button>
+        </div>
       </div>
     </div>
 
-    <!-- ШАГ 2: Выбор свидания -->
+    <!-- ШАГ 2 -->
     <div id="step-2" class="step">
       <div class="badge">🥂 Твой выбор</div>
-      <h1>Куда отправимся?</h1>
-      <p class="story" style="margin-bottom: 18px;">
-        Выбирай любой сценарий, который тебе сейчас по настроению — или предложи свой:
-      </p>
+      <h1>Как проведём время?</h1>
 
       <div class="options-grid" id="options-list">
-        <div class="option-card selected" data-choice="Уютный ужин вдвоём при свечах 🍷">
+        <div class="option-card selected" data-choice="Уютный ужин вдвоём 🍷">
           <div class="option-emoji">🍷</div>
           <div class="option-content">
             <h3>Уютный ужин вдвоём</h3>
-            <p>Вкусная еда, спокойная атмосфера и разговоры обо всём на свете.</p>
+            <p>Спокойный вечер, вкусная еда и долгие разговоры.</p>
           </div>
         </div>
 
-        <div class="option-card" data-choice="Вечерняя прогулка с кофе и любимой музыкой 🌙">
+        <div class="option-card" data-choice="Прогулка по городу и кофе 🌙">
           <div class="option-emoji">🌙</div>
           <div class="option-content">
-            <h3>Ночной город и кофе</h3>
-            <p>Прогуляться по любимым местам, как раньше, только лучше.</p>
+            <h3>Прогулка и кофе</h3>
+            <p>Пройтись без спешки, поболтать и выдохнуть после дел.</p>
           </div>
         </div>
 
-        <div class="option-card" data-choice="Спонтанная поездка за город / на закат 🚗">
+        <div class="option-card" data-choice="Небольшая поездка вдвоём 🚗">
           <div class="option-emoji">🚗</div>
           <div class="option-content">
-            <h3>Поездка навстречу закату</h3>
-            <p>Выбраться из суеты, включить наш плейлист и просто побыть вдвоём.</p>
+            <h3>Поездка вдвоём</h3>
+            <p>Сменить обстановку, включить музыку и провести день вместе.</p>
           </div>
         </div>
+      </div>
+
+      <span class="section-label">Когда тебе удобнее?</span>
+      <div class="chips-row" id="when-chips">
+        <div class="chip selected" data-when="на днях">На днях</div>
+        <div class="chip" data-when="на выходных">На выходных</div>
+        <div class="chip" data-when="когда выберем день">Подберём день</div>
       </div>
 
       <input
         type="text"
         id="custom-choice"
         class="custom-input"
-        placeholder="Или напиши свой идеальный вариант..."
+        placeholder="Или напиши свой вариант формата или места..."
       />
 
-      <button class="btn btn-primary" id="btn-confirm">Подтвердить выбор ✨</button>
+      <button class="btn btn-primary" id="btn-confirm" type="button">Подтвердить выбор ✨</button>
     </div>
 
-    <!-- ШАГ 3: Финал и отправка ответа -->
+    <!-- ШАГ 3 -->
     <div id="step-3" class="step">
       <div class="final-box">
-        <div class="final-heart">❤️</div>
+        <div class="final-heart">😍</div>
         <h1>Договорились!</h1>
-        <p class="story" style="margin-bottom: 0;">
-          Уже жду нашей встречи. Нажми на кнопку ниже, чтобы отправить мне свой выбор в Telegram:
+        <p class="story" style="margin-bottom: 6px;">
+          Уже жду встречи. Нажми кнопку ниже, чтобы отправить ответ в Telegram:
         </p>
+        <div class="dodge-result" id="dodge-result"></div>
 
         <div class="chosen-summary" id="summary-text"></div>
 
@@ -381,77 +553,242 @@
   </div>
 
   <script>
-    // === НАСТРОЙКА ===
-    // Укажи свой username в Telegram без символа @ (например, 'ivan_ivanov')
-    // Если оставить пустым, откроется стандартное окно выбора чата для пересылки
+    // Укажи свой username в Telegram без @ (например, 'my_username')
     const YOUR_TELEGRAM_USERNAME = 'noillexe';
 
+    const confessions = [
+      {
+        badge: '✨ Наша история',
+        loveColor: '#34d399',
+        loveGlow: 'rgba(16, 185, 129, 0.78)',
+        paragraphs: [
+          'У нас за плечами три года и целая история. За год, что мы были порознь, многое встало на свои места — и сейчас, когда мы снова общаемся, я всё яснее чувствую, как ты мне дорога.',
+          '<span class="love-phrase">Я люблю тебя</span> — уже без лишней суеты, но по-настоящему глубоко и тепло.',
+          'Давай без спешки встретимся?'
+        ]
+      },
+      {
+        badge: '🌙 Тёплая мысль',
+        loveColor: '#d8b4fe',
+        loveGlow: 'rgba(168, 85, 247, 0.78)',
+        paragraphs: [
+          'Мне так не хватает моментов, когда не нужно писать сообщения на ночь, а можно просто обнять тебя перед сном и почувствовать, что ты рядом.',
+          '<span class="love-phrase">Я тебя люблю</span> и очень хочу, чтобы таких тихих тёплых вечеров у нас снова стало больше.',
+          'Давай встретимся?'
+        ]
+      },
+      {
+        badge: '☕ Утренний вайб',
+        loveColor: '#ff8fab',
+        loveGlow: 'rgba(244, 114, 182, 0.78)',
+        paragraphs: [
+          'Больше всего мне хочется простых и настоящих вещей: делать тебе кофе по утрам, никуда не спешить и просто быть рядом.',
+          '<span class="love-phrase">Я люблю тебя</span> — искренне, спокойно и всем сердцем.',
+          'Давай начнём с тёплой встречи?'
+        ]
+      },
+      {
+        badge: '🤍 Близость',
+        loveColor: '#ffffff',
+        loveGlow: 'rgba(255, 255, 255, 0.85)',
+        paragraphs: [
+          'Иногда хочется не переписываться часами, а просто сидеть рядом, держаться за руки, обниматься и разделять этот вечер вместе.',
+          'Я поймал себя на том, что <span class="love-phrase">очень тебя люблю</span> — за твою улыбку, за тебя саму и за то, как легко мне рядом.',
+          'Встретимся?'
+        ]
+      },
+      {
+        badge: '💫 От души',
+        loveColor: '#ff5c77',
+        loveGlow: 'rgba(239, 68, 68, 0.82)',
+        paragraphs: [
+          'Мне правда хорошо с тобой — и в разговорах, и в тишине, и в самых простых мелочах.',
+          '<span class="love-phrase">Я люблю тебя</span> и зову провести время вдвоём, где нам обоим будет тепло и по-настоящему здорово.',
+          'Выбирай, как проведём время?'
+        ]
+      }
+    ];
+
+    const bodyEl = document.getElementById('confession-body');
+    const badgeEl = document.getElementById('confession-badge');
+    const flightOverlay = document.getElementById('flight-overlay');
+    let currentConfessionIndex = Math.floor(Math.random() * confessions.length);
+
+    function renderConfession(index) {
+      const item = confessions[index];
+      badgeEl.textContent = item.badge;
+      document.documentElement.style.setProperty('--love-color', item.loveColor);
+      document.documentElement.style.setProperty('--love-glow', item.loveGlow);
+      bodyEl.innerHTML = item.paragraphs.map((p) => `<p>${p}</p>`).join('');
+    }
+
+    function populateLocalRoamingEmojis(count = 14) {
+      flightOverlay.innerHTML = '';
+      const pool = ['😍', '🥰', '❤️', '💖', '💕'];
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('span');
+        el.className = 'roaming-emoji';
+        el.textContent = pool[i % pool.length];
+        el.style.left = (8 + Math.random() * 82) + '%';
+        el.style.top = (6 + Math.random() * 84) + '%';
+        el.style.fontSize = (18 + Math.random() * 11) + 'px';
+        el.style.opacity = (0.2 + Math.random() * 0.16).toFixed(2);
+        el.style.setProperty('--roam-dur', (5.5 + Math.random() * 5).toFixed(1) + 's');
+        el.style.setProperty('--roam-delay', (-Math.random() * 5).toFixed(1) + 's');
+        el.style.setProperty('--rx1', ((Math.random() * 2 - 1) * 28).toFixed(0) + 'px');
+        el.style.setProperty('--ry1', ((Math.random() * 2 - 1) * 24).toFixed(0) + 'px');
+        el.style.setProperty('--rx2', ((Math.random() * 2 - 1) * 28).toFixed(0) + 'px');
+        el.style.setProperty('--ry2', ((Math.random() * 2 - 1) * 24).toFixed(0) + 'px');
+        flightOverlay.appendChild(el);
+      }
+    }
+
+    function spawnLocalFlightBurst(count = 18) {
+      const pool = ['😍', '🥰', '❤️', '💖', '💕'];
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          const el = document.createElement('span');
+          el.className = 'burst-emoji';
+          el.textContent = pool[Math.floor(Math.random() * pool.length)];
+          el.style.left = (12 + Math.random() * 76) + '%';
+          el.style.top = (25 + Math.random() * 65) + '%';
+          el.style.fontSize = (20 + Math.random() * 12) + 'px';
+          el.style.setProperty('--burst-dur', (1.4 + Math.random() * 0.9).toFixed(2) + 's');
+          el.style.setProperty('--bx', ((Math.random() * 2 - 1) * 42).toFixed(0) + 'px');
+          el.style.setProperty('--by', (-25 - Math.random() * 55).toFixed(0) + 'px');
+          el.style.setProperty('--br', ((Math.random() * 2 - 1) * 28).toFixed(0) + 'deg');
+          flightOverlay.appendChild(el);
+          setTimeout(() => el.remove(), 2400);
+        }, i * 45);
+      }
+    }
+
+    renderConfession(currentConfessionIndex);
+    populateLocalRoamingEmojis(15);
+
+    document.getElementById('btn-shuffle-confession').addEventListener('click', () => {
+      currentConfessionIndex = (currentConfessionIndex + 1) % confessions.length;
+      renderConfession(currentConfessionIndex);
+      spawnLocalFlightBurst(10);
+    });
+
+    const actionsArea = document.getElementById('actions-area');
     const btnYes = document.getElementById('btn-yes');
     const btnNo = document.getElementById('btn-no');
+    const dodgeResultEl = document.getElementById('dodge-result');
     const step1 = document.getElementById('step-1');
     const step2 = document.getElementById('step-2');
     const step3 = document.getElementById('step-3');
 
-    // Логика убегающей кнопки
     const runawayPhrases = [
-      'Ой, мимо 😜',
+      'Мимо 😜',
       'Не поймаешь!',
-      'Кнопка сломалась 🙈',
-      'Попробуй верхнюю ❤️',
-      'Неа, не туда!',
-      'Давай на свидание 😉',
-      'ну жми уже «Да» ✨'
+      'Увернулась 🙈',
+      'Жми верхнюю ❤️',
+      'Не туда!',
+      'Давай встретимся 😉',
+      'Сдаюсь ✨'
     ];
     let dodgeCount = 0;
+    let lastDodgeTime = 0;
+
+    function getAttemptWord(n) {
+      const mod10 = n % 10;
+      const mod100 = n % 100;
+      if (mod10 === 1 && mod100 !== 11) return 'раз';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'раза';
+      return 'раз';
+    }
 
     function dodgeButton(e) {
-      if (e) e.preventDefault();
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      const now = Date.now();
+      if (now - lastDodgeTime < 140) return;
+      lastDodgeTime = now;
+
       dodgeCount++;
-
-      // Генерируем безопасное смещение в пределах экрана
-      const maxX = Math.min(window.innerWidth * 0.28, 110);
-      const maxY = Math.min(window.innerHeight * 0.22, 130);
-
-      const randomX = (Math.random() * 2 - 1) * maxX;
-      const randomY = (Math.random() * 2 - 1) * maxY - 20;
-
-      btnNo.style.transform = `translate(${randomX}px, ${randomY}px)`;
       btnNo.textContent = runawayPhrases[(dodgeCount - 1) % runawayPhrases.length];
 
-      // Слегка увеличиваем кнопку "Да" с каждой попыткой нажать "Подумать"
-      const scale = Math.min(1 + dodgeCount * 0.04, 1.18);
+      const areaRect = actionsArea.getBoundingClientRect();
+      const yesRect = btnYes.getBoundingClientRect();
+
+      const currentTransform = btnNo.style.transform;
+      btnNo.style.transform = 'translate(0px, 0px)';
+      const baseRect = btnNo.getBoundingClientRect();
+      btnNo.style.transform = currentTransform;
+
+      const padding = 4;
+      const minX = (areaRect.left + padding) - baseRect.left;
+      const maxX = (areaRect.right - padding) - baseRect.right;
+
+      const maxY = (areaRect.bottom - padding) - baseRect.bottom;
+      const minY = (yesRect.bottom + 8) - baseRect.top;
+
+      const safeMinY = Math.min(minY, maxY);
+      const targetX = minX < maxX
+        ? minX + Math.random() * (maxX - minX)
+        : 0;
+      const targetY = safeMinY < maxY
+        ? safeMinY + Math.random() * (maxY - safeMinY)
+        : Math.max(0, maxY);
+
+      btnNo.style.transform = `translate(${Math.round(targetX)}px, ${Math.round(targetY)}px)`;
+
+      const scale = Math.min(1 + dodgeCount * 0.025, 1.09);
       btnYes.style.transform = `scale(${scale})`;
     }
 
-    btnNo.addEventListener('mouseenter', dodgeButton);
-    btnNo.addEventListener('touchstart', dodgeButton, { passive: false });
-    btnNo.addEventListener('click', dodgeButton);
+    function blockActivation(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+      }
+      dodgeButton(e);
+      return false;
+    }
 
-    // Салют из сердечек
-    function spawnHearts(count = 18) {
-      const hearts = ['❤️', '💖', '✨', '💕', '🥰'];
+    btnNo.addEventListener('mouseenter', dodgeButton);
+    btnNo.addEventListener('pointerdown', blockActivation, { passive: false });
+    btnNo.addEventListener('touchstart', blockActivation, { passive: false });
+    btnNo.addEventListener('mousedown', blockActivation, { passive: false });
+    btnNo.addEventListener('click', blockActivation, true);
+
+    function spawnFallingRain(count = 28) {
+      const items = ['😍', '🥰', '❤️', '💖', '💕', '😍', '🥰'];
       for (let i = 0; i < count; i++) {
         setTimeout(() => {
           const el = document.createElement('div');
-          el.className = 'floating-heart';
-          el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-          el.style.left = Math.random() * 90 + 5 + 'vw';
-          el.style.bottom = '15vh';
-          el.style.fontSize = Math.random() * 14 + 18 + 'px';
+          el.className = 'falling-item';
+          el.textContent = items[Math.floor(Math.random() * items.length)];
+          el.style.left = (Math.random() * 88 + 6) + 'vw';
+          el.style.fontSize = (Math.random() * 12 + 20) + 'px';
+          el.style.setProperty('--fall-dur', (Math.random() * 1.4 + 2.6).toFixed(2) + 's');
+          el.style.setProperty('--sway', ((Math.random() * 2 - 1) * 26).toFixed(0) + 'px');
+          el.style.setProperty('--rot', ((Math.random() * 2 - 1) * 24).toFixed(0) + 'deg');
           document.body.appendChild(el);
-          setTimeout(() => el.remove(), 2600);
-        }, i * 70);
+          setTimeout(() => el.remove(), 4300);
+        }, i * 85);
       }
     }
 
-    // Переход ко второму шагу
     btnYes.addEventListener('click', () => {
-      spawnHearts(22);
+      if (dodgeCount > 0) {
+        dodgeResultEl.textContent = `Кстати, ты пыталась поймать кнопку «Подумать» ${dodgeCount} ${getAttemptWord(dodgeCount)} 😄`;
+      } else {
+        dodgeResultEl.textContent = 'Сразу нажала «Давай встретимся» — без раздумий ❤️';
+      }
+
+      spawnLocalFlightBurst(20);
+      spawnFallingRain(26);
       step1.classList.remove('active');
       step2.classList.add('active');
     });
 
-    // Выбор карточки варианта
     const optionCards = document.querySelectorAll('.option-card');
     const customInput = document.getElementById('custom-choice');
     let selectedOption = optionCards[0].dataset.choice;
@@ -475,12 +812,26 @@
       }
     });
 
-    // Подтверждение и формирование ссылки в Telegram
+    const whenChips = document.querySelectorAll('#when-chips .chip');
+    let selectedWhen = whenChips[0].dataset.when;
+
+    whenChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        whenChips.forEach((c) => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        selectedWhen = chip.dataset.when;
+      });
+    });
+
     document.getElementById('btn-confirm').addEventListener('click', () => {
       const finalChoice = customInput.value.trim() || selectedOption;
-      document.getElementById('summary-text').textContent = finalChoice;
+      document.getElementById('summary-text').innerHTML =
+        `<strong>Формат:</strong> ${finalChoice}<br><strong>Когда:</strong> ${selectedWhen}`;
 
-      const messageText = `Я согласна на свидание! ❤️\nМой вариант: ${finalChoice}`;
+      const attemptNote = dodgeCount > 0
+        ? `\n(Попыток поймать кнопку «Подумать»: ${dodgeCount})`
+        : '';
+      const messageText = `Давай встретимся! ❤️\nФормат: ${finalChoice}\nКогда: ${selectedWhen}${attemptNote}`;
       const encodedText = encodeURIComponent(messageText);
 
       const tgLink = YOUR_TELEGRAM_USERNAME
@@ -489,7 +840,7 @@
 
       document.getElementById('tg-share-link').href = tgLink;
 
-      spawnHearts(28);
+      spawnFallingRain(34);
       step2.classList.remove('active');
       step3.classList.add('active');
     });
