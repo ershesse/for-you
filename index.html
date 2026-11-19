@@ -151,8 +151,15 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
       margin-bottom: 18px;
+    }
+
+    .top-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .badge {
@@ -173,15 +180,24 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: var(--text-muted);
       font-size: 12px;
-      padding: 6px 11px;
+      padding: 6px 10px;
       border-radius: 999px;
       cursor: pointer;
       transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .btn-ghost-mini:hover {
       color: var(--text-main);
       background: rgba(255, 255, 255, 0.11);
+    }
+
+    .btn-music.playing {
+      background: rgba(255, 94, 126, 0.18);
+      border-color: rgba(255, 94, 126, 0.45);
+      color: #ffc2cf;
     }
 
     h1 {
@@ -209,7 +225,6 @@
       font-weight: 600;
     }
 
-    /* Подсветка и свечение фразы «Я люблю тебя» */
     .love-phrase {
       color: var(--love-color);
       font-weight: 700;
@@ -466,12 +481,18 @@
 <body>
   <div class="ambient-glow"></div>
 
+  <!-- Аудиофайл (загрузи music.mp3 в корень репозитория рядом с index.html) -->
+  <audio id="bg-music" src="music.mp3" loop preload="auto"></audio>
+
   <div class="container">
     <!-- ШАГ 1 -->
     <div id="step-1" class="step active">
       <div class="top-row">
         <div class="badge" id="confession-badge">✨ Наша история</div>
-        <button class="btn-ghost-mini" id="btn-shuffle-confession" type="button">🔄 Другой вариант</button>
+        <div class="top-controls">
+          <button class="btn-ghost-mini btn-music" id="btn-music" type="button">🎵 Музыка</button>
+          <button class="btn-ghost-mini" id="btn-shuffle-confession" type="button">🔄 Ещё</button>
+        </div>
       </div>
 
       <div class="local-flight-layer" id="confession-flight-zone">
@@ -487,7 +508,10 @@
 
     <!-- ШАГ 2 -->
     <div id="step-2" class="step">
-      <div class="badge">🥂 Твой выбор</div>
+      <div class="top-row">
+        <div class="badge">🥂 Твой выбор</div>
+        <button class="btn-ghost-mini btn-music" id="btn-music-2" type="button">🎵 Музыка</button>
+      </div>
       <h1>Как проведём время?</h1>
 
       <div class="options-grid" id="options-list">
@@ -555,6 +579,77 @@
   <script>
     // Укажи свой username в Telegram без @ (например, 'my_username')
     const YOUR_TELEGRAM_USERNAME = 'noillexe';
+
+    // === ЛОГИКА ФОНОВОЙ МУЗЫКИ ===
+    const bgMusic = document.getElementById('bg-music');
+    const musicBtns = document.querySelectorAll('.btn-music');
+    let userPausedMusic = false;
+    let musicStarted = false;
+
+    function updateMusicButtons(isPlaying) {
+      musicBtns.forEach((btn) => {
+        if (isPlaying) {
+          btn.textContent = '⏸ Пауза';
+          btn.classList.add('playing');
+        } else {
+          btn.textContent = '🎵 Музыка';
+          btn.classList.remove('playing');
+        }
+      });
+    }
+
+    function fadeInMusic(targetVolume = 0.45) {
+      bgMusic.volume = 0.05;
+      const step = 0.04;
+      const timer = setInterval(() => {
+        if (bgMusic.paused) {
+          clearInterval(timer);
+          return;
+        }
+        if (bgMusic.volume + step >= targetVolume) {
+          bgMusic.volume = targetVolume;
+          clearInterval(timer);
+        } else {
+          bgMusic.volume += step;
+        }
+      }, 120);
+    }
+
+    function tryStartMusic() {
+      if (userPausedMusic || musicStarted) return;
+      bgMusic.play()
+        .then(() => {
+          musicStarted = true;
+          updateMusicButtons(true);
+          fadeInMusic(0.45);
+        })
+        .catch(() => {
+          // Браузер ждёт явного взаимодействия — попробуем на следующем клике
+        });
+    }
+
+    musicBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (bgMusic.paused) {
+          userPausedMusic = false;
+          bgMusic.play()
+            .then(() => {
+              musicStarted = true;
+              updateMusicButtons(true);
+              fadeInMusic(0.45);
+            })
+            .catch(() => {});
+        } else {
+          userPausedMusic = true;
+          bgMusic.pause();
+          updateMusicButtons(false);
+        }
+      });
+    });
+
+    // Пробуем мягко включить музыку при первом касании/клике по странице
+    document.addEventListener('pointerdown', tryStartMusic, { once: true });
 
     const confessions = [
       {
@@ -667,6 +762,7 @@
     populateLocalRoamingEmojis(15);
 
     document.getElementById('btn-shuffle-confession').addEventListener('click', () => {
+      tryStartMusic();
       currentConfessionIndex = (currentConfessionIndex + 1) % confessions.length;
       renderConfession(currentConfessionIndex);
       spawnLocalFlightBurst(10);
@@ -748,6 +844,7 @@
       if (typeof e.stopImmediatePropagation === 'function') {
         e.stopImmediatePropagation();
       }
+      tryStartMusic();
       dodgeButton(e);
       return false;
     }
@@ -777,6 +874,7 @@
     }
 
     btnYes.addEventListener('click', () => {
+      tryStartMusic();
       if (dodgeCount > 0) {
         dodgeResultEl.textContent = `Кстати, ты пыталась поймать кнопку «Подумать» ${dodgeCount} ${getAttemptWord(dodgeCount)} 😄`;
       } else {
