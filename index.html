@@ -481,7 +481,6 @@
 <body>
   <div class="ambient-glow"></div>
 
-  <!-- Аудиофайл (загрузи music.mp3 в корень репозитория рядом с index.html) -->
   <audio id="bg-music" src="music.mp3" loop preload="auto"></audio>
 
   <div class="container">
@@ -580,7 +579,6 @@
     // Укажи свой username в Telegram без @ (например, 'my_username')
     const YOUR_TELEGRAM_USERNAME = 'noillexe';
 
-    // === ЛОГИКА ФОНОВОЙ МУЗЫКИ ===
     const bgMusic = document.getElementById('bg-music');
     const musicBtns = document.querySelectorAll('.btn-music');
     let userPausedMusic = false;
@@ -623,9 +621,7 @@
           updateMusicButtons(true);
           fadeInMusic(0.45);
         })
-        .catch(() => {
-          // Браузер ждёт явного взаимодействия — попробуем на следующем клике
-        });
+        .catch(() => {});
     }
 
     musicBtns.forEach((btn) => {
@@ -648,7 +644,6 @@
       });
     });
 
-    // Пробуем мягко включить музыку при первом касании/клике по странице
     document.addEventListener('pointerdown', tryStartMusic, { once: true });
 
     const confessions = [
@@ -700,6 +695,16 @@
           'Мне правда хорошо с тобой — и в разговорах, и в тишине, и в самых простых мелочах.',
           '<span class="love-phrase">Я люблю тебя</span> и зову провести время вдвоём, где нам обоим будет тепло и по-настоящему здорово.',
           'Выбирай, как проведём время?'
+        ]
+      },
+      {
+        badge: '🎶 Украсть тебя — МАЯК Х',
+        loveColor: '#5eead4',
+        loveGlow: 'rgba(45, 212, 191, 0.82)',
+        paragraphs: [
+          'Я хочу с тобой состариться в тесном уютном домике<br>Спать пока мы не выспимся, жить будто мы затворники<br>Пить, танцевать по вторникам, утром прямо до полдника<br>Целоваться под звездами, с чувством, что мы свободные',
+          'Когда звучит этот трек, ловит одно простое чувство: <span class="love-phrase">я тебя люблю</span> и хочу, чтобы мы снова были ближе.',
+          'Давай встретимся?'
         ]
       }
     ];
