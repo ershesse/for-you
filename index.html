@@ -537,7 +537,17 @@
             <p>Сменить обстановку, включить музыку и провести день вместе.</p>
           </div>
         </div>
-      </div>
+    
+
+        <div class="option-card" data-choice="Свой милый вариант ❤️">
+          <div class="option-emoji">❤️</div>
+          <div class="option-content">
+            <h3>Сама решу ❤️❤️❤️</h3>
+            <p>Я умею тебя слушать, принцесса.</p>
+          </div>
+        </div>
+  </div>
+
 
       <span class="section-label">Когда тебе удобнее?</span>
       <div class="chips-row" id="when-chips">
@@ -596,7 +606,7 @@
       });
     }
 
-    function fadeInMusic(targetVolume = 0.45) {
+    function fadeInMusic(targetVolume = 0.35) {
       bgMusic.volume = 0.05;
       const step = 0.04;
       const timer = setInterval(() => {
